@@ -1,0 +1,35 @@
+from flask import request,jsonify,Flask, Response, make_response, jsonify
+import json
+from bancodados import Name
+from post import  new_palabra1
+
+import os
+
+
+app = Flask(__name__)
+
+url="http://127.0.0.1:5000/nova_carpeta1.txt"
+@app.route("/read_txt", methods=["GET"]) 
+def  read_txt():
+   return make_response(jsonify(Name))
+
+@app.route("/create_txt", methods=["POST"])
+def create_txt():
+   new_text= request.post(url, data=json.dumps(new_palabra1))
+   return make_response(jsonify(new_text))
+ 
+
+@app.route("/delete_txt", methods=["DELETE"]) 
+def delete_txt(): 
+   delet_text=request.delete(url="http://127.0.0.1:5000/nova_carpeta1.txt")
+   delet_text.json()
+   return make_response(jsonify(delet_text))
+
+
+@app.route("/update_txt", methods=["PUT"])  
+def update_txt():
+   new_employee='{"brandomm":18}'
+   Up_text= request.put(url, data=json.dumps(new_employee) )
+   
+   return make_response(jsonify(Up_text))
+app.run(debug=True)  
