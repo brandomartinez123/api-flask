@@ -1,0 +1,24 @@
+print("escolha uma opção \n 1= get, \n2=post,\n3=delete,\n4=put ")
+num= input("digite um número : ")
+
+
+new_palabra= '{"Brandon":22}'
+with open("nova_carpeta1.txt","a",encoding='UTF-8') as file:
+        file.write(str(new_palabra))
+
+if num=="1":
+    print("consultando todas as tarefas")
+if num=="2":
+    print("criando nova tarefa")  
+    new_palabra1= '{"Brandon":1}'
+    variable1=open("nova_carpeta1.txt","r+")  
+    
+if num=="3": 
+    print("removeu uma tarefa da lista")
+if num=="4":
+    print("API de edição")
+    f = open("nova_carpeta.txt", "a")
+    f.write(new_palabra)
+    f.close()
+else :
+    print("dado errado")  
