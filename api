@@ -1,35 +1,83 @@
+#cliente para uso da api
 from flask import request,jsonify,Flask, Response, make_response, jsonify
 import json
-from bancodados import Name
-from post import  new_palabra1
+import pandas as pd
+import csv
 
-import os
-
-
+url='http://127.0.0.1:5000'
 app = Flask(__name__)
-
-url="http://127.0.0.1:5000/nova_carpeta1.txt"
+#leer txt
 @app.route("/read_txt", methods=["GET"]) 
 def  read_txt():
-   return make_response(jsonify(Name))
+   dict_file_name = request.form.to_dict(flat=False)
+   file_name = dict_file_name['file'][0]
+   with open(f'{file_name}.txt','rt')as read_file:
+      text= read_file.read()
+   read_file.close()  
+   return jsonify(text)
 
-@app.route("/create_txt", methods=["POST"])
-def create_txt():
-   new_text= request.post(url, data=json.dumps(new_palabra1))
-   return make_response(jsonify(new_text))
- 
+@app.route("/create_txt", methods=["POST"]) 
+def  create_txt():
+   name_file=request.form.to_dict(flat=False)
+   New_file1=name_file['file_NEWTXT']
+   with open(f'{New_file1}.txt','x+')as Newfile:
+      response= {'response': 'new create good'}
+   Newfile.close()  
+   return Response (response=jsonify.dumps(response),status=200)
 
-@app.route("/delete_txt", methods=["DELETE"]) 
-def delete_txt(): 
-   delet_text=request.delete(url="http://127.0.0.1:5000/nova_carpeta1.txt")
-   delet_text.json()
-   return make_response(jsonify(delet_text))
-
-
-@app.route("/update_txt", methods=["PUT"])  
-def update_txt():
-   new_employee='{"brandomm":18}'
-   Up_text= request.put(url, data=json.dumps(new_employee) )
+@app.route("/edit_txt", methods=["PUT"]) 
+def  edit_txt():
+   file_edit= request.form.to_dict(flat=False)
+   New_txt_edit=file_edit['file'][0]
+   content = file_edit['conten'][0]
+   with open(f'{content}.txt','a') as edittext:
+       edittext.write(content)
+   edittext.close()  
+   response ={'response': 'it was modified'}
+   return Response (response=jsonify.dumps(response),status=200)
+#######
+@app.route("/read_csv",methods=['GET']) 
+def  read_csv():
+   file_name_df = request.form.to_dict(flat=False)
+   file_name = file_name_df['file'][0]
+   with open(f'{file_name}.csv','rt')as read_file:
+      text_csv= csv.reader(read_file, delimiter=',')
+   read_file.close()  
+   #dato_ejemplo=pd.read_csv('bancodatos.csv',sep=',')
+   return jsonify(text_csv)
+#####
+@app.route("/edit_csv",methods=['PUT']) 
+def  edit_csv():
+   edit_file_df = request.form.to_dict(flat=False)
+   file_name = edit_file_df['file'][0]
+   with open(f'{file_name}.csv','w',newline='')as edit_file:
+      text_csv= csv.write(edit_file, delimiter=',')
+      text_csv.writerow(['PROducto','precio'])
+   edit_file.close()  
    
-   return make_response(jsonify(Up_text))
-app.run(debug=True)  
+   #ejemplo_csv=pd.read_csv('bancodatos.csv')
+   #ejemplo_csv.loc[:,'nome_columna:nova']=0
+   #display(ejemplo_csv)
+   #ejemplo_csv['rating']=ejemplo_csv['duracao']*(coisa_aumentar)
+   #dato_ejemplo_edit=.appendd(ejemplo_csv)
+   return jsonify(text_csv)
+
+@app.route("/create_csv",methods=['POST']) 
+def  create_csv():
+   create_file_df=request.form.to_dict(flat=False)
+   New_file1=create_file_df['file_NEWTXT_csv']
+   with open(f'{New_file1}.csv','x+')as Newfile:
+      response= {'response': 'new create good'}
+   Newfile.close()  
+   return Response (response=jsonify.dumps(response),status=200)
+#dic_new={'cor':['branco','preto'],'ano':[2,4,6]},index=['cachorro','gato','passaro']
+#new_fileedit=pd.DataFrame(dic_new)
+#display(new_fileedit)
+
+@app.route("/filtro_csv",methods=['PUT']) 
+def  filtro_csv():
+   ejemplo_csv=pd.read_csv('bancodatos.csv')
+   filtro_name=ejemplo_csv.loc[(ejemplo_csv['Rating']>=10) & (ejemplo_csv['Duracao']< 40) & (ejemplo_csv['Nome'].str.startswith('b')),
+                    ['Nome','Descrição']]
+   display(filtro_name)
+app.run()
