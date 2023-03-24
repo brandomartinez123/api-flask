@@ -1,24 +1,42 @@
-print("escolha uma opção \n 1= get, \n2=post,\n3=delete,\n4=put ")
-num= input("digite um número : ")
+#cliente para uso da api
+import requests , json ,csv
+url='http://127.0.0.1:5000'
+# uso para ler os archigos txt
+def read(file):
+    dict_file_name={'file':file}
+    response_create = requests.get(f'{url}/read_txt', data=dict_file_name)
+    return print(response_create.status_code)
+# uso de post
+def create(file):
+    name_file={'file_NEWTXT':file}
+    create_res=requests.post(f'{url}/create_txt', data=name_file)
+    return print(create_res.status_code)
+#uso do put
+def edit(file,content):
+    file_edit={'file':file,
+              'content':content}
+    edit_res=requests.put(f'{url}/edit_txt', data=file_edit)
+    return print(edit_res.status_code)
 
+def read_csv(file):
+    #file_name_df=pd.read_csv('bancodatos_pd.csv')
+    file_name_df={'file':file}
+    response_create = requests.get(f'{url}/read_csv', data=file_name_df)
+    return display(response_create.status_code)
 
-new_palabra= '{"Brandon":22}'
-with open("nova_carpeta1.txt","a",encoding='UTF-8') as file:
-        file.write(str(new_palabra))
-
-if num=="1":
-    print("consultando todas as tarefas")
-if num=="2":
-    print("criando nova tarefa")  
-    new_palabra1= '{"Brandon":1}'
-    variable1=open("nova_carpeta1.txt","r+")  
-    
-if num=="3": 
-    print("removeu uma tarefa da lista")
-if num=="4":
-    print("API de edição")
-    f = open("nova_carpeta.txt", "a")
-    f.write(new_palabra)
-    f.close()
-else :
-    print("dado errado")  
+def edit_csv(file):
+    #file_name_df=pd.read_csv('bancodatos_pd.csv')
+    edit_file_df={'nome':file}
+    response_create = requests.put(f'{url}/edit_csv', data=edit_file_df)
+    return display(response_create.status_code)
+def create_csv(file):
+    #file_name_df=pd.read_csv('bancodatos_pd.csv')
+    create_file_df={'nome':file}
+    response_create = requests.post(f'{url}/create_csv', data=create_file_df)
+    return display(response_create.status_code)
+def filtro_csv(file):
+    create_file_df={'nome':file}
+    response_create = requests.put(f'{url}/filtro_csv', data=create_file_df)
+    return display(response_create.status_code)
+#if __name__ == "__main__":
+#	read("file")
