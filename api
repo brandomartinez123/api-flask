@@ -1,8 +1,7 @@
-#cliente para uso da api
+
 from flask import request,jsonify,Flask, Response, make_response, jsonify
 import json
 import pandas as pd
-import csv
 
 url='http://127.0.0.1:5000'
 app = Flask(__name__)
@@ -11,73 +10,116 @@ app = Flask(__name__)
 def  read_txt():
    dict_file_name = request.form.to_dict(flat=False)
    file_name = dict_file_name['file'][0]
-   with open(f'{file_name}.txt','rt')as read_file:
-      text= read_file.read()
-   read_file.close()  
+   try:
+      with open(f'{file_name}.txt','rt')as read_file:
+        text= read_file.read()
+      read_file.close() 
+   except FileNotFoundError as error:
+      text = 'error: file not found'   
    return jsonify(text)
 
 @app.route("/create_txt", methods=["POST"]) 
 def  create_txt():
    name_file=request.form.to_dict(flat=False)
    New_file1=name_file['file_NEWTXT']
-   with open(f'{New_file1}.txt','x+')as Newfile:
-      response= {'response': 'new create good'}
-   Newfile.close()  
-   return Response (response=jsonify.dumps(response),status=200)
+   try:
+       with open(f'{New_file1}.txt','x+')as Newfile:
+           response= {'response': 'new create good'}
+       Newfile.close() 
+   except:   
+      response={'response':'this filename already exists'} 
+   return Response(response=jsonify.dumps(response),status=200,mimetype='application/json')
 
 @app.route("/edit_txt", methods=["PUT"]) 
 def  edit_txt():
    file_edit= request.form.to_dict(flat=False)
    New_txt_edit=file_edit['file'][0]
-   content = file_edit['conten'][0]
-   with open(f'{content}.txt','a') as edittext:
+   content= file_edit['content'][0]
+   with open(f'{New_txt_edit}.txt','a') as edittext:
        edittext.write(content)
    edittext.close()  
    response ={'response': 'it was modified'}
-   return Response (response=jsonify.dumps(response),status=200)
+   return Response(response=jsonify.dumps(response),status=200,mimetype='application/json')
+#######
+#cliente para uso da api
+
+
+
 #######
 @app.route("/read_csv",methods=['GET']) 
 def  read_csv():
    file_name_df = request.form.to_dict(flat=False)
-   file_name = file_name_df['file'][0]
-   with open(f'{file_name}.csv','rt')as read_file:
-      text_csv= csv.reader(read_file, delimiter=',')
-   read_file.close()  
-   #dato_ejemplo=pd.read_csv('bancodatos.csv',sep=',')
-   return jsonify(text_csv)
+   file_name= file_name_df['file'][0]
+   try:
+      read=pd.read_csv(f'{file_name}.csv')
+      return read.to_json()
+   except FileNotFoundError as error:
+      response={'response': 'o file nao exist'}
+      return Response(response=jsonify.dumps(response),status=200,mimetype='application/json')
 #####
 @app.route("/edit_csv",methods=['PUT']) 
 def  edit_csv():
-   edit_file_df = request.form.to_dict(flat=False)
-   file_name = edit_file_df['file'][0]
-   with open(f'{file_name}.csv','w',newline='')as edit_file:
-      text_csv= csv.write(edit_file, delimiter=',')
-      text_csv.writerow(['PROducto','precio'])
-   edit_file.close()  
-   
-   #ejemplo_csv=pd.read_csv('bancodatos.csv')
-   #ejemplo_csv.loc[:,'nome_columna:nova']=0
-   #display(ejemplo_csv)
-   #ejemplo_csv['rating']=ejemplo_csv['duracao']*(coisa_aumentar)
-   #dato_ejemplo_edit=.appendd(ejemplo_csv)
-   return jsonify(text_csv)
+   edit_file_df = request.get_json()
+   content_file = json.loads(edit_file_df)
+   file_name=content_file('file')
+   row_list=content_file('content')
+   print(content_file)
+   print(file_name)
+   try:
+      df=pd.read_csv(f'{file_name}.csv')
+      for row in row_list:
+          df.loc[len(df)]= row
+      df.to_csv(f'{file_name}.csv',index = False)
+      response = {'response':'the csv file was modified'}
+   except:
+      response={'response':'this filename already exist.'}
+   return Response (response=jsonify.dumps(response),status=200, mimetype='application/json')
 
 @app.route("/create_csv",methods=['POST']) 
 def  create_csv():
-   create_file_df=request.form.to_dict(flat=False)
-   New_file1=create_file_df['file_NEWTXT_csv']
-   with open(f'{New_file1}.csv','x+')as Newfile:
-      response= {'response': 'new create good'}
-   Newfile.close()  
-   return Response (response=jsonify.dumps(response),status=200)
-#dic_new={'cor':['branco','preto'],'ano':[2,4,6]},index=['cachorro','gato','passaro']
-#new_fileedit=pd.DataFrame(dic_new)
-#display(new_fileedit)
+   create_file_df=request.get_json()
+   content_file=json.loads(create_file_df)
+   file_name =content_file.get('file')
+   data =content_file.get('content')
+   try:
+      pd.read_csv(f'{file_name}.csv')
+      response={'response':'this filename already exist.'}
+   except:
+      df=pd.dataframe(data)
+      df.to_csv(f'{file_name}.csv',index=False)
+   return Response (response=jsonify.dumps(response),status=200, mimetype='application/json')
 
-@app.route("/filtro_csv",methods=['PUT']) 
-def  filtro_csv():
-   ejemplo_csv=pd.read_csv('bancodatos.csv')
-   filtro_name=ejemplo_csv.loc[(ejemplo_csv['Rating']>=10) & (ejemplo_csv['Duracao']< 40) & (ejemplo_csv['Nome'].str.startswith('b')),
-                    ['Nome','Descrição']]
-   display(filtro_name)
+@app.route("/read_specific_csv",methods=['PUT']) 
+def  read_specific_csv():
+   json_data_file=request.get_json()
+   data_file= json.loads(json_data_file)
+   file_name=data_file.get('file')
+   first_line=data_file.get('first')
+   last_line=data_file.get('last')
+   try:
+      df=pd.read_csv(f'{file_name}.csv')
+      read_lines=df.loc[first_line:last_line]
+      return read_lines.to_json()
+   except FileNotFoundError as error :
+      response={'response':'this file not exist.'}
+      return Response (response=jsonify.dumps(response),status=200, mimetype='application/json')
+   ##############
+@app.route("/filter_csv",methods=['GET']) 
+def  filter_csv():
+   json_data_file=request.get_json()
+   data_file= json.loads(json_data_file)
+   file_name=data_file.get('file')
+   column=data_file.get('filter')
+   value=data_file.get('value')
+   try:
+      df=pd.read_csv(f'{file_name}.csv')
+      if column in df:
+         read_filter=df.loc[(df[column]<value)]      
+         return read_filter.to_json()
+      else:
+         read_filter={'response':'this filter do column not exist.'}
+         return Response (response=jsonify.dumps(response),status=200, mimetype='application/json')
+   except FileNotFoundError as error :
+      response={'response':'the csv file does not exist'}
+      return Response (response=jsonify.dumps(response),status=200, mimetype='application/json')
 app.run()
