@@ -4,13 +4,13 @@ url='http://127.0.0.1:5000'
 # uso para ler os archigos txt
 def read(file):
     dict_file_name={'file':file}
-    response_create = requests.get(f'{url}/read_txt', data=dict_file_name)
-    return print(response_create.status_code)
+    response = requests.get(f'{url}/read_txt', data=dict_file_name)
+    return print(response.status_code,response.json())
 # uso de post
 def create(file):
     name_file={'file_NEWTXT':file}
     create_res=requests.post(f'{url}/create_txt', data=name_file)
-    return print(create_res.status_code)
+    return print(create_res.status_code,create_res.json())
 #uso do put
 def edit(file,content):
     file_edit={'file':file,
@@ -19,24 +19,50 @@ def edit(file,content):
     return print(edit_res.status_code)
 
 def read_csv(file):
-    #file_name_df=pd.read_csv('bancodatos_pd.csv')
     file_name_df={'file':file}
-    response_create = requests.get(f'{url}/read_csv', data=file_name_df)
-    return display(response_create.status_code)
+    response_read = requests.get(f'{url}/read_csv', data=file_name_df)
+    response_json = response_read.json()
+    try:
+        response_df=pd.DataFrame(response_json)
+        print(response_df)
+    except:
+ 
+        print(response_json)
 
-def edit_csv(file):
-    #file_name_df=pd.read_csv('bancodatos_pd.csv')
-    edit_file_df={'nome':file}
-    response_create = requests.put(f'{url}/edit_csv', data=edit_file_df)
-    return display(response_create.status_code)
-def create_csv(file):
-    #file_name_df=pd.read_csv('bancodatos_pd.csv')
-    create_file_df={'nome':file}
-    response_create = requests.post(f'{url}/create_csv', data=create_file_df)
-    return display(response_create.status_code)
-def filtro_csv(file):
-    create_file_df={'nome':file}
-    response_create = requests.put(f'{url}/filtro_csv', data=create_file_df)
-    return display(response_create.status_code)
-#if __name__ == "__main__":
+def edit_csv(file, content):
+    edit_file_df={'file':file,
+                'content':content}
+    response_edit = requests.put(f'{url}/edit_csv', json=json.dumps(edit_file_df))
+    print(response_edit.json())
+#create csv post
+def create_csv(file,content):
+    create_file_df={'file':file,
+                    'content':content}
+    response_create = requests.post(f'{url}/create_csv', json=json.dumps(create_file_df))
+    print(response_create.json())
+
+def read_specific_csv(file_name,first_line,last_line):
+    read_fil_df={'file':file_name,
+                 'first':first_line,
+                 'last':last_line}
+    response_linea = requests.get(f'{url}/read_specific_csv',json=json.dumps(read_fil_df))
+    response_json=response_linea.json()
+    try:
+        response_df= pd.DataFrame(response_json)
+        print(response_df)
+    except:
+        print(response_json)
+
+def filter_csv(file_name,column,value):
+    read_fil_df={'file':file_name,
+                 'filter':column,
+                 'value':value}
+    response_filter = requests.get(f'{url}/filter_csv',json=json.dumps(read_fil_df))
+    response_json=response_filter.json()
+    try:
+        response_df= pd.DataFrame(response_json)
+        print(response_df)
+    except:
+        print(response_json)   
+#if _name_ == "_main_":
 #	read("file")
